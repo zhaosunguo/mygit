@@ -1,0 +1,91 @@
+在TfrmMain.FormShow
+//2018-03-20 解决当没有连接串口设备时,不能创建测点,因为没有检测 RightCom 只是根据是否打开串口,造成误判
+  if NormalCOM.Connected  and RightCom then
+  begin
+
+    TimerCircle.Enabled := false;
+    TimerCircle.Interval := strtoint(JBCS.strxczq) * 1000;
+     //TimerCircle.Interval:=100;    //为了加快提取数据的速度,改定时器为100ms
+
+
+
+TTrackThread.ClientExecute
+if (GPRSBuf[i * 4 + 21] and $08) = $08 then //湿度下限报警
+                      begin
+                        tempstr := tempstr + '湿度超下限 ';
+                        if CurCDPZIndex >= 0 then
+                          CDPZ[CurCDPZIndex].iSDCXBJ := 2;
+                      end;
+
+//2018-03-20 没有加Begin End 导致设为空库后,不能正常返回到非空库状态
+                      if (GPRSBuf[i * 4 + 21] and $20) = $20 then //空库标记
+                        begin if CurCDPZIndex >= 0 then CDPZ[CurCDPZIndex].iUse := 1; end
+                       else
+                        begin  if CurCDPZIndex >= 0 then CDPZ[CurCDPZIndex].iUse := 0;  end
+
+?把FormShow 中的 局部变量改为全局的
+?  RightCom: boolean=false; //用于全局的标志串口是否能正常通讯
+
+
+TfrmMain.TimerAlarmTimer
+
+   //2018-03-20 解决没有接串口通讯时,仅通过GRPS接收温湿度数据时,没有报警
+
+    iAlarmStyle :=0;
+    for CurCDPZ := Low(cdpz) to High(cdpz) do
+    begin
+      if (CDPZ[CurCDPZ].iUse <> 1) then
+      begin
+        if (CDPZ[CurCDPZ].iWDCXBJ <> 0) or (CDPZ[CurCDPZ].iSDCXBJ <> 0) then //报警
+        begin
+          iAlarmStyle := 2;
+        end
+        else if (CDPZ[CurCDPZ].iWDYJ <> 0) or (CDPZ[CurCDPZ].iSDYJ <> 0) then //预警
+        begin
+          if iAlarmStyle <> 2 then //如果在没有报警的情况下，才可以进行预警。
+            iAlarmStyle := 1;
+        end;
+      end;
+    end;
+
+
+
+    if iAlarmStyle = 0 then
+    begin
+      chbAlarm.Checked := false;
+      RZBTNAlam.ImageIndex := 1;
+    end
+
+
+
+9.0.0以上 CheckDogtmr 中使用的几个定时器需要加 前缀 frmMain. 改用发送消息方式进行检测加密狗
+floattoword  把 Trunc 改为  Round;
+
+procedure floattoword(fnum: real; var vb1, vb2: byte);
+var
+  lsstr: string;
+  b1, b2: byte;
+begin
+  lsstr := set_str(inttostr(Round(abs(fnum) * 10+0.00001)), 3, '0', '前');
+  if fnum < 0 then
+    b1 := $80
+  else
+    b1 := $00;
+  b1 := b1 + byte(strtoint(lsstr[1]));
+  b2 := byte(strtoint(lsstr[2]));
+  b2 := (b2 shl 4) + byte(strtoint(lsstr[3]));
+  vb1 := b1;
+  vb2 := b2;
+
+end;
+
+TfrmMain.TimerHistoryTimer 在定时器中 需要先判断一下是否为空
+      if trim(JBCS.SendDataTime)='' then begin      JBCS.SendDataTime:='0'; end;
+      if trim(JBCS.SendDataTime1)='' then begin      JBCS.SendDataTime1:='0'; end;
+
+
+
+'温度值℃';
+
+'湿度值％';
+
